@@ -28,7 +28,7 @@ class Connection:
         self.connection.write(command.encode())
         data = self.receive_data
         if ord(data):
-            return ord(data)
+            pass
         else:
             raise Exception("bad send command")
 

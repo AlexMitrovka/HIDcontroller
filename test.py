@@ -1,53 +1,64 @@
-import json
 import asyncio
-from mouse import Mouse
+import serial_asyncio
 
-# self.pos = []
-# self.filename = 'pos.json'
-# self.mouse = Mouse()
 
- def start_stop_task(self):
-        if self.is_running:
-            self.is_running = False
-            # Зупинити скрипт
-        else:
-            self.is_running = True
-            # Запустити скрипт
+class OutputProtocol(asyncio.Protocol):
+    def __init__(self):
+        super().__init__()
+        self.transport = None
 
-    async def start(self):
-        while True:
-            event = await asyncio.to_thread(keyboard.read_event)
-            if event.event_type == 'down':
-                if event.name == 'f2':
-                    self.record_mouse_pos()
-                elif  event.name == 'f3':
-                    self.save_mouse_pos()
+    def connection_made(self, transport):
+        self.transport = transport
+        print('port opened', transport)
+        transport.serial.rts = False
+        transport.write(b'Hello, World!\n')
+        self.send_command(b'AT\r\n')  # Send command
 
-    def stop(self):
-        keyboard.unhook_all()
+    def data_received(self, data):
+        print('data received', repr(data))
+        if b'\n' in data:
+            self.transport.close()
 
-    def stop(self):
-        keyboard.unhook_all()
+    def connection_lost(self, exc):
+        print('port closed')
+        self.transport.loop.stop()
 
-    # def get_cursor_position(self):
-    #     point = POINT()
-    #     ctypes.windll.user32.GetCursorPos(ctypes.byref(point))
-    #     return point.x, point.y
+    def pause_writing(self):
+        print('pause writing')
+        print(self.transport.get_write_buffer_size())
 
-    def record_mouse_pos(self):
-        self.pos.append(self.mouse.get_cursor_position())
+    def resume_writing(self):
+        print(self.transport.get_write_buffer_size())
+        print('resume writing')
 
-    def save_mouse_pos(self):
-        with open(self.filename, 'w') as f:
-            json.dump(self.pos,f)
+    def send_command(self, command):
+        self.transport.write(command)
 
-    def mouse_release(self, key):
-        pass
 
-#keyboard_example = KeyboardExample()
+async def main():
+    loop = asyncio.get_event_loop()
+    coro = serial_asyncio.create_serial_connection(loop, OutputProtocol, 'COM135', baudrate=9600)
+    transport, protocol = await coro
 
-# Создайте асинхронный цикл и запустите метод start() объекта KeyboardExample в цикле
-#async def main():
-#    await keyboard_example.start()
+    # Save reference to the transport object
+    global output_transport
+    output_transport = transport
 
-#asyncio.run(main())
+    loop.run_forever()
+    loop.close()
+
+
+async def send_command(command):
+    # Send command using saved reference to the transport object
+    output_transport.write(command)
+
+
+if __name__ == '__main__':
+    # Start the event loop and establish the connection
+    asyncio.run(main())
+
+    # Use create_task to schedule the send_command task in the event loop
+    loop = asyncio.get_event_loop()
+    loop.create_task(send_command("MV,100,200;".encode()))
+    loop.run_forever()
+    loop.close()

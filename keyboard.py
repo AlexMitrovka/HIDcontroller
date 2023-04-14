@@ -25,18 +25,18 @@ class KeyboardInterface(ABC):
 class Keyboard(KeyboardInterface):
 
     def kbdReleaseAll(self):
-        return f"RA;"
+        return f"R;"
 
     def kbdRelease(self, key):
-        return f"KR,{key};"
+        return f"KR{key};"
 
     def kbdPress(self, key):
-        return f"KP,{key};"
+        return f"KP{key};"
 
     def kbdWrite(self, char):
-        return f"KW,{char};"
+        return f"KW{ord(char)};"
 
     def kbdPrint(self, str):
-        return f"PT,{str};"
+        return f"KT{str};"
 
 

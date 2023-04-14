@@ -2,26 +2,26 @@ import asyncio
 import serial_asyncio
 
 
-class Connection(serial_asyncio.SerialProtocol):
+class Connection:
     def __init__(self, port, baudrate):
         self.port = port
         self.baudrate = baudrate
         self.transport = None
         self.data_buffer = b''
 
-    def connection_made(self, transport):
-        self.transport = transport
-        print(f"Connected to {self.port}")
+    async def connect(self):
+        self.reader, self.writer = await serial_asyncio.open_serial_connection(
+            url=self.port,
+            baudrate=self.baudrate
+        )
+    async def read_data(self):
+        data = await self.reader.read(1)
+        print(f"Received: {data.decode()}")
 
-    def connection_lost(self, exc):
-        self.transport.loop.stop()
-        print(f"Connection lost on port {self.port}: {exc}")
+    # def connection_lost(self, exc):
+    #     self.transport.loop.stop()
+    #     print(f"Connection lost on port {self.port}: {exc}")
 
-    def data_received(self, data):
-        self.data_buffer += data
-        if len(self.data_buffer) == 1:
-            print(f"Received: {self.data_buffer[0]}")
-            self.data_buffer = b''
 
     def send_command(self, command):
-        self.transport.write(command.encode())
+        self.writer.write(command.encode())

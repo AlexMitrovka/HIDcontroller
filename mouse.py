@@ -29,26 +29,27 @@ class Mouse(MouseInterface):
     RIGHT = 2
     MIDDLE = 4
     def moveTo(self, x, y):
-        command = f"MV,{x},{y};"
+        command = f"MV{x},{y};"
         print(command)
         return command
 
     def click(self, key,x=None, y=None):
-        command = f"MC,{key};"
+        command = f"MC{key};"
         if x and y:
             return command+self.moveTo(x,y)
         else:
             return command
 
     def mouse_press(self, key):
-        command = f"MP,{key};"
+        command = f"MP{key};"
         print(command)
         return command
 
     def mouse_release(self, key):
-        command = f"MR,{key};"
+        command = f"MR{key};"
         print(command)
         return command
+
 
 
 

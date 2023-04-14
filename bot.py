@@ -1,76 +1,59 @@
 import time
 from typing import Type
-from serialAsync import Connection
+from serialConnect import Connection
 from settings import Settings
 from keyboard import KeyboardInterface
 from mouse import MouseInterface
-import asyncio
 
 class Facade:
-
-    def __init__(self, keyboard: Type[KeyboardInterface], mouse: Type[MouseInterface],port,baudrate):
+    def __init__(self, keyboard:[KeyboardInterface], mouse:[MouseInterface]):
         self.settings = Settings()
         self.keyboard = keyboard
         self.mouse = mouse
-        self.port = port
-        self.baudrate = baudrate
-        # self.connection = Connection(self.settings.com_port, self.settings.baund_rate)
-        self.connection = None
-        self.loop = asyncio.get_event_loop()
+        self.connection = Connection(self.settings.com_port, self.settings.baund_rate)
 
-    async def __aenter__(self):
+
+    def __enter__(self):
         print("Entering context")
-        self.connection = await serial_asyncio.create_serial_connection(
-            self.loop,
-            lambda: Connection(self.port, self.baudrate),
-            limit=0
-        )
+        self.connection.connect(None)
         return self
-        # print("Entering context")
-        # await self.connection.connect(None)
-        # return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         print("Exiting context")
-        self.connection.transport.close()
-        await self.connection.wait_closed()
-        # print("Exiting context")
-        # await self.connection.close_connection()
+        self.connection.close_connection()
 
-    async def pressKey(self, key):
-        await self.connection.send_command(self.mouse.mouse_press(key))
+    def pressKey(self, key):
+         self.connection.send_command(self.mouse.mouse_press(key))
 
-    async def releaseKey(self, key):
-        await self.connection.send_command(self.mouse.mouse_release(key))
+    def releaseKey(self, key):
+         self.connection.send_command(self.mouse.mouse_release(key))
 
-    async def move(self, x, y):
-        await self.connection.send_command(self.mouse.moveTo(x, y))
+    def move(self, x, y):
+         self.connection.send_command(self.mouse.moveTo(x, y))
 
-    def dragAndDrop(self, x, y, x1, y1, duration, KEY=1):
-        self.move(x, y)
-        time.sleep(1)
-        self.pressKey(KEY)
-        time.sleep(1)
-        self.move(x1, y1)
-        time.sleep(1)
-        self.releaseKey(KEY)
+    def drag_and_drop(self, x, y, xt, yt, interval=0.25, duration=None, key=1):
+        self.move(x,y)
+        self.pressKey(key)
+        self.move(xt,yt)
+        time.sleep(interval)
+        self.releaseKey(key)
 
-    async  def click(self, key, x=None, y=None):
-        await self.connection.send_command(self.mouse.click(key, x, y))
+    def click(self, key, x=None, y=None):
+        self.connection.send_command(self.mouse.click(key, x, y))
 
-    async  def kbPress(self, key):
-        await self.connection.send_command(self.keyboard.kbdPress(key))
+    def kbPress(self, key):
+        self.connection.send_command(self.keyboard.kbdPress(key))
 
-    async  def kbWrite(self, char):
-        await self.connection.send_command(self.keyboard.kbdWrite(char))
+    def kbWrite(self, char):
+        self.connection.send_command(self.keyboard.kbdWrite(char))
 
-    async  def kbRelease(self, key):
-        await self.connection.send_command(self.keyboard.kbdRelease(key))
+    def kbRelease(self, key):
+        self.connection.send_command(self.keyboard.kbdRelease(key))
 
-    async  def kbReleaseAll(self):
-        await self.connection.send_command(self.keyboard.kbdReleaseAll())
+    def kbReleaseAll(self):
+        self.connection.send_command(self.keyboard.kbdReleaseAll())
 
-    async  def kbPrint(self, str):
-        await self.connection.send_command(self.keyboard.kbdPrint(str))
+    def kbPrint(self, str):
+        self.connection.send_command(self.keyboard.kbdPrint(str))
 
 
