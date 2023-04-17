@@ -34,7 +34,10 @@ class Keyboard(KeyboardInterface):
         return f"KP{key};"
 
     def kbdWrite(self, char):
-        return f"KW{ord(char)};"
+        if type(char) is str:
+            return f"KW{ord(char)};"
+        else:
+            return f"KW{char};"
 
     def kbdPrint(self, str):
         return f"KT{str};"

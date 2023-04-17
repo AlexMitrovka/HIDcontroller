@@ -1,11 +1,10 @@
 import time
-from typing import Type
-from serialConnect import Connection
-from settings import Settings
-from keyboard import KeyboardInterface
-from mouse import MouseInterface
+from src.serialConnect import Connection
+from src.settings import Settings
+from src.keyboard import KeyboardInterface
+from src.mouse import MouseInterface
 
-class Facade:
+class ArduinoController:
     def __init__(self, keyboard:[KeyboardInterface], mouse:[MouseInterface]):
         self.settings = Settings()
         self.keyboard = keyboard

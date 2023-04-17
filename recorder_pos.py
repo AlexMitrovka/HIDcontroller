@@ -1,4 +1,4 @@
-from keyboard import Keyboard
+from src.keyboard import Keyboard
 import asyncio
 keyboard_example = Keyboard()
 
